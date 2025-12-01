@@ -1,6 +1,6 @@
 {{-- Dashboard Menu --}}
 <li class="menu-header">Dashboard</li>
-<li class="{{ Request::is('dashboard*') ? 'active' : '' }}">
+<li class="{{ $title == 'Dashboard' ? 'active' : '' }}">
     <a href="{{ route('dashboard') }}" class="nav-link">
         <i class="fas fa-fire"></i>
         <span>Dashboard</span>
@@ -18,7 +18,7 @@
 
 {{-- Add your menu items here --}}
 <li class="menu-header">Setting</li>
-<li>
+<li class="{{ $title == 'Manage Data Dosen' ? 'active' : '' }}">
     <a href="{{ route('lecture') }}" class="nav-link">
         <i class="fas fa-gear"></i>
         <span>Manage Data Dosen</span>

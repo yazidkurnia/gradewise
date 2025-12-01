@@ -1,7 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\StudentController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Datatables\ApiDataTable;
 use App\Http\Controllers\ManageLecture\ManageLectureController;
 
 /*
@@ -23,10 +25,13 @@ Route::get('/', function () {
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/manage-lecture', [ManageLectureController::class, 'index'])->name('lecture');
-    Route::get('/student', [StudentController::class, 'index'])->name('student');
+
 });
 
+// Route::get('/student', [StudentController::class, 'index'])->name('student');
 Route::resource('student', StudentController::class);
 
+
+Route::get('/lecture-data',[ApiDataTable::class, 'fetch_data_lecture'])->name('lecture.all');
 
 require __DIR__.'/auth.php';

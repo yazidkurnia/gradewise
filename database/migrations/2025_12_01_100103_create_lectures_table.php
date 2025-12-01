@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('lectures', function (Blueprint $table) {
             $table->id();
+            $table->string('nidn', 15)->nullable();
+            $table->string('name', 50)->nullable();
+            $table->string('expertise', 120)->nullable();
+            $table->integer('academic_rank')->nullable();
+            $table->tinyInteger('is_active')->default(1)->comment('1=active, 0=inactive');
             $table->timestamps();
         });
     }

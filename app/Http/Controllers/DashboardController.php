@@ -13,7 +13,7 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        return view('pages.adm_dashboard.index');
-        return view('student.index');
+        $title = 'Dashboard';
+        return view('pages.dashboard.index', compact('title'));
     }
 }

@@ -12,8 +12,29 @@ class ManageLectureController extends Controller
      */
     public function index()
     {
-        $pageTitle = 'Manage Data Dosen';
-        return view('pages.manage_lecture.index', compact('pageTitle'));
+        # init title page
+        $title = 'Manage Data Dosen';
+
+        # init datatable configuration
+        $tableConfig = [
+            # judul datatable
+            'title' => 'Table data dosen',
+            # table header
+            'tableHead' => [
+                'No',
+                'Nama Dosen',
+                'Nidn',
+                'Bidang Khusus',
+                'Status Aktif'
+            ],
+            # table id
+            'tableId' => 'table_dosen',
+            'url_data' => route('lecture.all')
+        ];
+
+        $compact = compact('tableConfig', 'title');
+
+        return view('pages.manage_lecture.index', $compact);
     }
 
     /**
@@ -21,7 +42,7 @@ class ManageLectureController extends Controller
      */
     public function create()
     {
-        //
+        
     }
 
     /**
