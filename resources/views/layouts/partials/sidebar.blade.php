@@ -1,10 +1,15 @@
 <div class="main-sidebar sidebar-style-2">
     <aside id="sidebar-wrapper">
-        <div class="sidebar-brand">
-            <a href="{{ url('/') }}">{{ config('app.name') }}</a>
+        <div class="sidebar-brand mb-5">
+            <a href="{{ url('/') }}">
+                <img src="{{ asset('assets/img/logo/logo_gradewise.png') }}" class="w-52 h-52" style="width:50%"
+                    alt="" srcset="">
+            </a>
         </div>
         <div class="sidebar-brand sidebar-brand-sm">
-            <a href="{{ url('/') }}">{{ substr(config('app.name'), 0, 2) }}</a>
+            <a href="{{ url('/') }}">
+                <img src="{{ asset('assets/img/logo/logo_gradewise.png') }}" class="w-52 h-52" style="width:100%"
+                    alt="" srcset=""></a>
         </div>
 
         <ul class="sidebar-menu">
