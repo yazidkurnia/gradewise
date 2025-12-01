@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ManageLecture\ManageLectureController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,13 +22,11 @@ Route::get('/', function () {
 // Dashboard Route
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-});
-
-// Mahasiswa Route
-Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/manage-lecture', [ManageLectureController::class, 'index'])->name('lecture');
     Route::get('/student', [StudentController::class, 'index'])->name('student');
 });
 
 Route::resource('student', StudentController::class);
+
 
 require __DIR__.'/auth.php';

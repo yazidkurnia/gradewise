@@ -17,6 +17,12 @@
 </li>
 
 {{-- Add your menu items here --}}
-<li class="menu-header">Menu</li>
+<li class="menu-header">Setting</li>
+<li>
+    <a href="{{ route('lecture') }}" class="nav-link">
+        <i class="fas fa-gear"></i>
+        <span>Manage Data Dosen</span>
+    </a>
+</li>
 
 @stack('sidebar-items')
