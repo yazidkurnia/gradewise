@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,5 +23,12 @@ Route::get('/', function () {
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
+
+// Mahasiswa Route
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/student', [StudentController::class, 'index'])->name('student');
+});
+
+Route::resource('student', StudentController::class);
 
 require __DIR__.'/auth.php';
