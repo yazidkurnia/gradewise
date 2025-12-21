@@ -17,7 +17,7 @@
                 </div>
                 <div class="col-6 d-flex justify-content-end">
                     <button type="button" class="btn btn-primary" id="btnLaunchModal">
-                        Launch
+                        + Tambah Data Baru
                     </button>
                 </div>
             </div>
@@ -36,23 +36,84 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="myModalLabel">Modal Title</h5>
+                <h5 class="modal-title" id="myModalLabel">Tambah Data Dosen
+                </h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                Modal content goes here...
+                {{-- 
+                    add class : is-valid / is-invalid
+                    untuk validasi suksess pada tag input / textarea dll
+                --}}
+                <form action="" method="post" id="formPost">
+                    @csrf
+                    <div class="form-group">
+                        <label>NIDN</label>
+                        <input type="text" class="form-control" name="nidn" id="nidn">
+                        <div id="form-error-message"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>NAMA DOSEN</label>
+                        <input type="text" class="form-control" name="nama_dosen" id="nama_dosen">
+                        <div id="form-error-message"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>BIDANG SPESIALIS</label>
+                        <input type="text" class="form-control" name="spesialis" id="spesialis">
+                        <div id="form-error-message"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>STATUS AKTIF</label>
+                        <select class="form-control" name="status_aktif" id="status_aktif">
+                            <option value="">Pilih Status</option>
+                            <option value="1">Aktif</option>
+                            <option value="0">Tidak Aktif</option>
+                        </select>
+                        <div id="form-error-message"></div>
+                    </div>
+                </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save changes</button>
+                <button type="button" class="btn btn-primary" onclick="save()">Save changes</button>
             </div>
         </div>
     </div>
 </div>
 @push('scripts')
     <script>
+        function resetForm() {
+            $('#nidn').val('');
+            $('#nama_dosen').val('');
+            $('#spesialis').val('');
+            $('#status_aktif').val('');
+        }
+
+        function alertLoadingState() {
+            let timerInterval;
+            Swal.fire({
+                title: "Memproses !!",
+                html: "Mohon Menunggu <b></b> milliseconds.",
+                timer: 5000,
+                timerProgressBar: true,
+                didOpen: () => {
+                    Swal.showLoading();
+                    const timer = Swal.getPopup().querySelector("b");
+                    timerInterval = setInterval(() => {
+                        timer.textContent = `${Swal.getTimerLeft()}`;
+                    }, 100);
+                },
+                willClose: () => {
+                    clearInterval(timerInterval);
+                }
+            }).then((result) => {
+                if (result.dismiss === Swal.DismissReason.timer) {
+                    console.log("I was closed by the timer");
+                }
+            });
+        }
         // GUNAKAN EVENT LISTENER SETELAH DOM READY
         $(function() {
             get_all_data();
@@ -274,8 +335,47 @@
             }
         }
 
-        function addNewData() {
-            window.location.href = '{{ url('lectures/create') }}';
+        function save() {
+            $('#myModal').modal('hide');
+
+            // mendefinisikan url yang akan dituju untuk melakukan post data
+            var url = "{!! route('lecture.store') !!}";
+
+            // mengambil seluruh data dari elemen yang ada didalam form
+            var formElement = $('#formPost')[0];
+
+            // mengumpulkan data yang telah diambil kedalam collection
+            var formData = new FormData(formElement);
+
+            console.log(formData);
+
+            alertLoadingState();
+
+            // implementasi insert dengan ajax
+            $.ajax({
+                url: url,
+                method: "POST",
+                data: formData,
+                processData: false, // TAMBAHKAN INI - jangan proses data
+                contentType: false, // TAMBAHKAN INI - jangan set content type
+                success: function(responseData) {
+                    Swal.fire({
+                        title: "Success!",
+                        icon: "success",
+                        draggable: true
+                    });
+                    resetForm();
+                    get_all_data();
+                },
+                error: function(xhr, textResponse, error) {
+                    Swal.fire({
+                        title: "Oops!",
+                        icon: "error",
+                        text: xhr.responseJSON.message,
+                        draggable: true
+                    });
+                }
+            })
         }
     </script>
 @endpush

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Datatables;
 use App\Models\Lecture;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Crypt;
 
 class ApiDataTable extends Controller
 {
@@ -21,10 +22,10 @@ class ApiDataTable extends Controller
         if (count($data) == 0){
             return response()->json(
                 [
-                    'code' => 404,
-                    'status' => 'failed',
+                    'code'    => 404,
+                    'status'  => 'failed',
                     'message' => 'Maaf data tidak ditemukan',
-                    'data' => NULL
+                    'data'    => NULL
                 ]
             );
         }
@@ -33,10 +34,11 @@ class ApiDataTable extends Controller
 
         foreach ($data as $list) {
             $rowData[] = [
-                'nidn' => $list->nidn,
-                'name' => $list->name,
+                'id'        => Crypt::encryptString($list->id),
+                'nidn'      => $list->nidn,
+                'name'      => $list->name,
                 'expertise' => $list->expertise,
-                'action' => 'empty',
+                'action'    => 'empty',
                 'is_active' => $list->is_active
             ];
         }
@@ -44,10 +46,10 @@ class ApiDataTable extends Controller
         # good case response
         return response()->json(
             [
-                'code' => 200,
-                'status' => 'success',
+                'code'    => 200,
+                'status'  => 'success',
                 'message' => 'Data berhasil diterima',
-                'data' => $rowData
+                'data'    => $rowData
             ]
         );
     }

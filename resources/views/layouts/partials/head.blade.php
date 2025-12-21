@@ -4,6 +4,8 @@
 
 <title>{{ $title ?? config('app.name') }} &mdash; {{ config('app.name') }}</title>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <!-- General CSS Files -->
 <link rel="stylesheet" href="{{ asset('assets/modules/bootstrap/css/bootstrap.min.css') }}">
 <link rel="stylesheet" href="{{ asset('assets/modules/fontawesome/css/all.min.css') }}">

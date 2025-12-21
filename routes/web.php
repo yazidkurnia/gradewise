@@ -24,7 +24,20 @@ Route::get('/', function () {
 // Dashboard Route
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/manage-lecture', [ManageLectureController::class, 'index'])->name('lecture');
+
+    /**
+     * ---------------------------------------------------------------------------------------------------------------------------
+     * All route about lecture                                                                                                   |
+     * ---------------------------------------------------------------------------------------------------------------------------
+    **/
+        Route::get('/manage-lecture', [ManageLectureController::class, 'index'])->name('lecture');
+        Route::post('/manage-lecture/store', [ManageLectureController::class, 'store'])->name('lecture.store');
+    /**
+     * ---------------------------------------------------------------------------------------------------------------------------
+     * End route                                                                                                                 |
+     * ---------------------------------------------------------------------------------------------------------------------------
+    **/
+    
 
 });
 

@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\ManageLecture;
 
-use App\Http\Controllers\Controller;
+use App\Models\Lecture;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class ManageLectureController extends Controller
 {
@@ -51,7 +52,27 @@ class ManageLectureController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validateRequest = $request->validate([
+            'nidn' => 'required',
+            'nama_dosen' => 'required',
+            'spesialis' => 'required',
+            'status_aktif' => 'required'
+        ]);
+
+        $insertDataLecture = [
+            'nidn' => $request->nidn,
+            'nama_dosen' => $request->nama_dosen,
+            'expertise' => $request->spesialis,
+            'is_active' => $request->status_aktif
+        ];
+
+        Lecture::create($insertDataLecture);
+
+        return response()->json(            [
+                'code'    => 200,
+                'status'  => 'success',
+                'message' => 'Data berhasil dikirim'
+        ]);
     }
 
     /**
