@@ -23,15 +23,67 @@ class ManageLectureController extends Controller
             # table header
             'tableHead' => [
                 'No',
+                'NIDN',
                 'Nama Dosen',
-                'Nidn',
                 'Bidang Khusus',
                 'Status Aktif',
                 'Tindakan'
             ],
             # table id
             'tableId' => 'table_dosen',
-            'url_data' => route('lecture.all')
+            # API endpoint URL
+            'url_data' => route('lecture.all'),
+            # Column configuration for AppDataTable
+            'columns' => [
+                [
+                    'field' => 'nidn',
+                    'label' => 'NIDN',
+                ],
+                [
+                    'field' => 'name',
+                    'label' => 'Nama Dosen',
+                ],
+                [
+                    'field' => 'expertise',
+                    'label' => 'Bidang Khusus',
+                ],
+                [
+                    'field' => 'is_active',
+                    'label' => 'Status Aktif',
+                    'type' => 'badge'
+                ],
+                [
+                    'field' => 'action',
+                    'label' => 'Tindakan',
+                    'type' => 'actions'
+                ]
+            ],
+            # Search configuration - Define which fields are searchable
+            'search' => [
+                'fields' => ['nidn', 'name', 'expertise']  // Search in these fields
+            ],
+            # Filter configuration - Define custom filters
+            'filters' => [
+                [
+                    'field' => 'is_active',
+                    'label' => 'Status',
+                    'placeholder' => 'Semua Status',
+                    'options' => [
+                        ['value' => '1', 'label' => 'Aktif'],
+                        ['value' => '0', 'label' => 'Tidak Aktif']
+                    ]
+                ]
+                // You can add more filters here
+                // [
+                //     'field' => 'expertise',
+                //     'label' => 'Bidang',
+                //     'placeholder' => 'Semua Bidang',
+                //     'options' => [
+                //         ['value' => 'Data Science', 'label' => 'Data Science'],
+                //         ['value' => 'Web Development', 'label' => 'Web Development']
+                //     ]
+                // ]
+            ]
         ];
 
         $compact = compact('tableConfig', 'title');

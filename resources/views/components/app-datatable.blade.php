@@ -1,3 +1,7 @@
+{{-- Search and Filter Controls --}}
+<div id="{{ $tableConfig['tableId'] }}_controls"></div>
+
+{{-- DataTable --}}
 <table class="table table-hover table-fluid" id="{{ $tableConfig['tableId'] }}">
     <thead class="w-100">
         <tr>
