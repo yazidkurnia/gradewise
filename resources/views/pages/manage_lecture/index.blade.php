@@ -10,17 +10,61 @@
     </div>
 
     <div class="section-body">
-        @include('components.app-datatable')
+        <div class="card">
+            <div class="card-header row">
+                <div class="col-6 d-flex justify-content-start">
+                    <h4>{{ $title }}</h4>
+                </div>
+                <div class="col-6 d-flex justify-content-end">
+                    <button type="button" class="btn btn-primary" id="btnLaunchModal">
+                        Launch
+                    </button>
+                </div>
+            </div>
+            <div class="card-body mx-0">
+                @include('components.app-datatable')
+            </div>
+        </div>
     </div>
 @endsection
 
 @push('styles')
     {{-- Add page specific styles here --}}
 @endpush
-
+{{-- PINDAHKAN MODAL KE SINI - DI LUAR CARD --}}
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="myModalLabel">Modal Title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Modal content goes here...
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
 @push('scripts')
-    {{-- Add page specific scripts here --}}
     <script>
+        // GUNAKAN EVENT LISTENER SETELAH DOM READY
+        $(function() {
+            get_all_data();
+            // Event handler untuk button modal
+            $('#btnLaunchModal').on('click', function(e) {
+                e.preventDefault();
+                console.log('Button clicked - showing modal');
+                $('#myModal').modal('show');
+                $('.modal-backdrop fade show').remove();
+            });
+        });
+
         function get_all_data() {
             $.ajax({
                 url: '{{ $tableConfig['url_data'] }}',
@@ -29,7 +73,6 @@
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 },
                 beforeSend: function() {
-                    // Tampilkan loading state
                     $('#{{ $tableConfig['tableId'] }}_body').html(
                         '<tr><td colspan="100%" class="text-center">' +
                         '<div class="spinner-border text-primary" role="status">' +
@@ -42,13 +85,10 @@
                 success: function(response) {
                     console.log('Response:', response);
 
-                    // Cek status response
                     if (response.status === 'success' || response.status === 'ok') {
-                        // Jika ada data
                         if (response.data && response.data.length > 0) {
                             renderTableData(response.data);
 
-                            // Tampilkan notifikasi sukses
                             if (typeof iziToast !== 'undefined') {
                                 iziToast.success({
                                     title: 'Sukses',
@@ -58,14 +98,11 @@
                                 });
                             }
                         } else {
-                            // Data kosong
                             showEmptyState();
                         }
                     } else if (response.status === 'failed' || response.status === 'error') {
-                        // Handle failed response
                         handleFailedResponse(response);
                     } else {
-                        // Status tidak dikenal
                         showEmptyState('Format response tidak valid');
                     }
                 },
@@ -79,7 +116,6 @@
 
                     let errorMessage = 'Terjadi kesalahan saat memuat data';
 
-                    // Handle berbagai jenis error
                     if (xhr.status === 0) {
                         errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
                     } else if (xhr.status === 404) {
@@ -98,10 +134,8 @@
                         errorMessage = xhr.responseJSON.message;
                     }
 
-                    // Tampilkan error di tabel
                     showErrorState(errorMessage);
 
-                    // Tampilkan notifikasi error
                     if (typeof iziToast !== 'undefined') {
                         iziToast.error({
                             title: 'Error',
@@ -120,21 +154,20 @@
         function renderTableData(data) {
             let html = '';
 
-            // Loop through data dan buat table rows
             $.each(data, function(index, item) {
                 html += '<tr>';
                 html += '<td class="text-center">' + (index + 1) + '</td>';
                 html += '<td>' + (item.nidn || '-') + '</td>';
                 html += '<td>' + (item.name || '-') + '</td>';
                 html += '<td>' + (item.expertise || '-') + '</td>';
-                html += '<td>' + (item.is_active) + '</td>'
-                html += '<td></td>'
+                html += '<td>' + (item.is_active) + '</td>';
+                html += '<td>' + (item.action) + '</td>';
+                html += '<td></td>';
                 html += '</tr>';
             });
 
             $('#{{ $tableConfig['tableId'] }}_body').html(html);
 
-            // Initialize tooltips jika ada
             if (typeof $('[data-toggle="tooltip"]').tooltip === 'function') {
                 $('[data-toggle="tooltip"]').tooltip();
             }
@@ -144,14 +177,11 @@
             let message = response.message || 'Gagal memuat data';
 
             if (response.data === null || (Array.isArray(response.data) && response.data.length === 0)) {
-                // Data kosong
                 showEmptyState(message);
             } else {
-                // Ada error lain
                 showErrorState(message);
             }
 
-            // Tampilkan notifikasi
             if (typeof iziToast !== 'undefined') {
                 iziToast.warning({
                     title: 'Perhatian',
@@ -198,16 +228,13 @@
             $('#{{ $tableConfig['tableId'] }}_body').html(html);
         }
 
-        // Function untuk action buttons
         function viewData(id) {
             console.log('View data:', id);
-            // Implementasi view detail
             window.location.href = '{{ url('lectures') }}/' + id;
         }
 
         function editData(id) {
             console.log('Edit data:', id);
-            // Implementasi edit
             window.location.href = '{{ url('lectures') }}/' + id + '/edit';
         }
 
@@ -227,7 +254,6 @@
                                 position: 'topRight'
                             });
                         }
-                        // Reload data
                         get_all_data();
                     },
                     error: function(xhr) {
@@ -251,10 +277,5 @@
         function addNewData() {
             window.location.href = '{{ url('lectures/create') }}';
         }
-
-        // Auto-run saat halaman load
-        $(function() {
-            get_all_data();
-        });
     </script>
 @endpush

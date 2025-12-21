@@ -29,13 +29,25 @@ class ApiDataTable extends Controller
             );
         }
 
+        $rowData = [];
+
+        foreach ($data as $list) {
+            $rowData[] = [
+                'nidn' => $list->nidn,
+                'name' => $list->name,
+                'expertise' => $list->expertise,
+                'action' => 'empty',
+                'is_active' => $list->is_active
+            ];
+        }
+
         # good case response
         return response()->json(
             [
                 'code' => 200,
                 'status' => 'success',
                 'message' => 'Data berhasil diterima',
-                'data' => $data
+                'data' => $rowData
             ]
         );
     }

@@ -25,7 +25,8 @@ class ManageLectureController extends Controller
                 'Nama Dosen',
                 'Nidn',
                 'Bidang Khusus',
-                'Status Aktif'
+                'Status Aktif',
+                'Tindakan'
             ],
             # table id
             'tableId' => 'table_dosen',
