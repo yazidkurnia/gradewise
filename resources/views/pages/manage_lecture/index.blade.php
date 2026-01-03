@@ -77,7 +77,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onclick="save()">Save changes</button>
+                <button type="button" class="btn btn-primary" id="btnSave" onclick="save()">Save changes</button>
             </div>
         </div>
     </div>
@@ -91,10 +91,23 @@
         let dataTable;
 
         function resetForm() {
+            // Clear form fields
             $('#nidn').val('');
             $('#nama_dosen').val('');
             $('#spesialis').val('');
             $('#status_aktif').val('');
+
+            // Reset form mode and data
+            $('#formPost').removeData('edit-id');
+            $('#formPost').removeData('mode');
+
+            // Reset modal title and button
+            $('#myModalLabel').text('Tambah Data Dosen');
+            $('#btnSave').text('Save changes');
+
+            // Remove validation classes
+            $('.form-control').removeClass('is-valid is-invalid');
+            $('.invalid-feedback').remove();
         }
 
         function alertLoadingState() {
@@ -121,18 +134,17 @@
             });
         }
 
-        // Initialize DataTable when DOM is ready
-        $(function() {
+        function loadDataTable() {
             // Initialize AppDataTable with configuration from backend
             dataTable = new AppDataTable({
                 tableId: '{{ $tableConfig['tableId'] }}',
                 apiUrl: '{{ $tableConfig['url_data'] }}',
                 columns: @json($tableConfig['columns']),
-                @if(isset($tableConfig['search']))
-                search: @json($tableConfig['search']),
+                @if (isset($tableConfig['search']))
+                    search: @json($tableConfig['search']),
                 @endif
-                @if(isset($tableConfig['filters']))
-                filters: @json($tableConfig['filters']),
+                @if (isset($tableConfig['filters']))
+                    filters: @json($tableConfig['filters']),
                 @endif
                 options: {
                     showNumbering: true,
@@ -150,9 +162,15 @@
             $('#btnLaunchModal').on('click', function(e) {
                 e.preventDefault();
                 console.log('Button clicked - showing modal');
+                resetForm(); // Reset form before showing modal for create
                 $('#myModal').modal('show');
                 $('.modal-backdrop fade show').remove();
             });
+        }
+
+        // Initialize DataTable when DOM is ready
+        $(function() {
+            loadDataTable();
         });
 
         // Helper function to reload data (backward compatibility)
@@ -162,93 +180,211 @@
             }
         }
 
-        function viewData(id) {
-            console.log('View data:', id);
-            window.location.href = '{{ url('lectures') }}/' + id;
+        /**
+         * View data detail
+         */
+        function viewData(encryptedId) {
+            console.log('View data:', encryptedId);
+
         }
 
-        function editData(id) {
-            console.log('Edit data:', id);
-            window.location.href = '{{ url('lectures') }}/' + id + '/edit';
-        }
+        /**
+         * Edit data
+         */
+        function editData(encryptedId) {
+            var urlEdit = '{{ url('manage-lecture/edit') }}/' + encryptedId;
 
-        function deleteData(id) {
-            if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
-                $.ajax({
-                    url: '{{ url('lectures') }}/' + id,
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    },
-                    success: function(response) {
-                        if (typeof iziToast !== 'undefined') {
-                            iziToast.success({
-                                title: 'Sukses',
-                                message: 'Data berhasil dihapus',
-                                position: 'topRight'
-                            });
-                        }
-                        get_all_data();
-                    },
-                    error: function(xhr) {
-                        let errorMessage = 'Gagal menghapus data';
-                        if (xhr.responseJSON && xhr.responseJSON.message) {
-                            errorMessage = xhr.responseJSON.message;
-                        }
+            // Show loading
+            Swal.fire({
+                title: 'Memuat Data...',
+                text: 'Mohon tunggu',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
 
-                        if (typeof iziToast !== 'undefined') {
-                            iziToast.error({
-                                title: 'Error',
-                                message: errorMessage,
-                                position: 'topRight'
-                            });
-                        }
+            $.ajax({
+                url: urlEdit,
+                method: "GET",
+                success: function(response) {
+                    Swal.close();
+
+                    if (response.status === 'success') {
+                        // Populate form fields with data
+                        $('#nidn').val(response.data.nidn);
+                        $('#nama_dosen').val(response.data.nama_dosen);
+                        $('#spesialis').val(response.data.spesialis);
+                        $('#status_aktif').val(response.data.status_aktif);
+
+                        // Store encrypted ID in form data attribute for update
+                        $('#formPost').data('edit-id', response.data.id);
+                        $('#formPost').data('mode', 'edit');
+
+                        // Change modal title and save button text
+                        $('#myModalLabel').text('Edit Data Dosen');
+                        $('#btnSave').text('Update Data');
+
+                        // Show modal
+                        $('#myModal').modal('show');
+                    } else {
+                        Swal.fire({
+                            title: 'Gagal!',
+                            text: response.message || 'Gagal memuat data',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
                     }
-                });
-            }
+                },
+                error: function(xhr) {
+                    Swal.close();
+
+                    let errorMessage = 'Gagal memuat data dosen';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+
+                    Swal.fire({
+                        title: 'Error!',
+                        text: errorMessage,
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            });
+        }
+
+        /**
+         * Delete data with confirmation
+         */
+        function deleteData(encryptedId) {
+            // Get item data for confirmation
+            const item = dataTable.findById(encryptedId);
+
+            Swal.fire({
+                title: 'Hapus Data Dosen?',
+                html: item ?
+                    `Anda akan menghapus data dosen:<br><strong>${item.name}</strong> (${item.nidn})` :
+                    'Anda yakin ingin menghapus data ini?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: '<i class="fas fa-trash"></i> Ya, Hapus',
+                cancelButtonText: '<i class="fas fa-times"></i> Batal',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading
+                    Swal.fire({
+                        title: 'Menghapus...',
+                        text: 'Mohon tunggu',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // Delete via AJAX
+                    $.ajax({
+                        url: '{{ url('lectures') }}/' + encryptedId,
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(response) {
+                            Swal.fire({
+                                title: 'Berhasil!',
+                                text: 'Data dosen berhasil dihapus',
+                                icon: 'success',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+
+                            // Reload datatable
+                            get_all_data();
+                        },
+                        error: function(xhr) {
+                            let errorMessage = 'Gagal menghapus data';
+
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                            }
+
+                            Swal.fire({
+                                title: 'Gagal!',
+                                text: errorMessage,
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                        }
+                    });
+                }
+            });
         }
 
         function save() {
-            $('#myModal').modal('hide');
+            // Check if in edit mode or create mode
+            var mode = $('#formPost').data('mode') || 'create';
+            var editId = $('#formPost').data('edit-id');
 
-            // mendefinisikan url yang akan dituju untuk melakukan post data
-            var url = "{!! route('lecture.store') !!}";
+            // Determine URL based on mode
+            var url;
+            var method;
 
-            // mengambil seluruh data dari elemen yang ada didalam form
+            if (mode === 'edit' && editId) {
+                url = '{{ url('manage-lecture') }}/' + editId;
+                method = 'PUT';
+            } else {
+                url = "{!! route('lecture.store') !!}";
+                method = 'POST';
+            }
+
+            // Get form data
             var formElement = $('#formPost')[0];
-
-            // mengumpulkan data yang telah diambil kedalam collection
             var formData = new FormData(formElement);
 
-            console.log(formData);
+            // Add _method for Laravel PUT request
+            if (method === 'PUT') {
+                formData.append('_method', 'PUT');
+            }
 
+            // Close modal and show loading
+            $('#myModal').modal('hide');
             alertLoadingState();
 
-            // implementasi insert dengan ajax
+            // Submit via AJAX
             $.ajax({
                 url: url,
-                method: "POST",
+                method: "POST", // Always POST, Laravel will handle PUT via _method
                 data: formData,
-                processData: false, // TAMBAHKAN INI - jangan proses data
-                contentType: false, // TAMBAHKAN INI - jangan set content type
+                processData: false,
+                contentType: false,
                 success: function(responseData) {
                     Swal.fire({
                         title: "Success!",
+                        text: mode === 'edit' ? 'Data berhasil diupdate' : 'Data berhasil ditambahkan',
                         icon: "success",
-                        draggable: true
+                        timer: 2000,
+                        showConfirmButton: false
                     });
                     resetForm();
                     get_all_data();
                 },
-                error: function(xhr, textResponse, error) {
+                error: function(xhr) {
+                    let errorMessage = 'Gagal menyimpan data';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+
                     Swal.fire({
                         title: "Oops!",
+                        text: errorMessage,
                         icon: "error",
-                        text: xhr.responseJSON.message,
-                        draggable: true
+                        confirmButtonText: 'OK'
                     });
                 }
-            })
+            });
         }
     </script>
 @endpush

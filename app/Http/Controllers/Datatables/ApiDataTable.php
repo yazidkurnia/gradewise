@@ -11,6 +11,7 @@ class ApiDataTable extends Controller
 {
     public function fetch_data_lecture(){
         $data = Lecture::select(
+            'id',           // ✅ TAMBAHKAN ID!
             'nidn',
             'name',
             'expertise',
@@ -33,12 +34,41 @@ class ApiDataTable extends Controller
         $rowData = [];
 
         foreach ($data as $list) {
+
+            $encryptedId = Crypt::encryptString($list->id);
+
+            $action = '
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button"
+                                class="btn btn-info"
+                                onclick="viewData(\'' . $encryptedId . '\')"
+                                data-toggle="tooltip"
+                                title="Lihat Detail">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button type="button"
+                                class="btn btn-warning"
+                                onclick="editData(\'' . $encryptedId . '\')"
+                                data-toggle="tooltip"
+                                title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button type="button"
+                                class="btn btn-danger"
+                                onclick="deleteData(\'' . $encryptedId . '\')"
+                                data-toggle="tooltip"
+                                title="Hapus">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                ';
+
             $rowData[] = [
-                'id'        => Crypt::encryptString($list->id),
+                'id'        => $encryptedId,
                 'nidn'      => $list->nidn,
                 'name'      => $list->name,
                 'expertise' => $list->expertise,
-                'action'    => 'empty',
+                'action'    => $action,
                 'is_active' => $list->is_active
             ];
         }

@@ -7,20 +7,19 @@
     </a>
 </li>
 
-{{-- Student Menu --}}
-<li class="menu-header">Mahasiswa</li>
-<li class="{{ Request::is('student*') ? 'active' : '' }}">
+{{-- Add your menu items here --}}
+<li class="menu-header">Setting</li>
+<li class="{{ $title == 'Manage Data Mahasiswa' ? 'active' : '' }}">
     <a href="{{ route('student') }}" class="nav-link">
-        <i class="fas fa-fire"></i>
+        <i class="fas fa-graduation"></i>
         <span>Student</span>
     </a>
 </li>
 
-{{-- Add your menu items here --}}
-<li class="menu-header">Setting</li>
 <li class="{{ $title == 'Manage Data Dosen' ? 'active' : '' }}">
-    <a href="{{ route('lecture') }}" class="nav-link">
-        <i class="fas fa-gear"></i>
+
+    <a href="{{ route('lecture') }}" class="nav-link ">
+        <i class="fas fa-school"></i>
         <span>Manage Data Dosen</span>
     </a>
 </li>

@@ -39,7 +39,12 @@ class AppDataTable {
             showNotifications: true,
             enableSearch: true,
             searchPlaceholder: 'Cari data...',
-            searchDebounce: 300
+            searchDebounce: 300,
+            enablePagination: true,
+            pageSize: 10,
+            pageSizeOptions: [5, 10, 25, 50, 100],
+            showPageSizeSelector: true,
+            showPaginationInfo: true
         }, config.options || {});
 
         this.table = null;
@@ -48,6 +53,9 @@ class AppDataTable {
         this.filteredData = [];
         this.searchTerm = '';
         this.activeFilters = {};
+        this.currentPage = 1;
+        this.pageSize = this.options.pageSize;
+        this.totalPages = 1;
 
         this.init();
     }
@@ -84,7 +92,175 @@ class AppDataTable {
         }
 
         this.initSearchAndFilters();
+        this.initPagination();
         this.loadData();
+    }
+
+    /**
+     * Initialize pagination UI
+     */
+    initPagination() {
+        const container = document.getElementById(this.tableId + '_pagination');
+        if (!container) return;
+
+        // Create wrapper for pagination controls
+        container.innerHTML = `
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div id="${this.tableId}_pagination_info"></div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-end align-items-center">
+                        <div id="${this.tableId}_page_size_selector" class="mr-3"></div>
+                        <div id="${this.tableId}_pagination_controls"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        this.renderPageSizeSelector();
+    }
+
+    /**
+     * Render page size selector
+     */
+    renderPageSizeSelector() {
+        if (!this.options.showPageSizeSelector) return;
+
+        const container = document.getElementById(this.tableId + '_page_size_selector');
+        if (!container) return;
+
+        const options = this.options.pageSizeOptions.map(size =>
+            `<option value="${size}" ${size === this.pageSize ? 'selected' : ''}>${size}</option>`
+        ).join('');
+
+        container.innerHTML = `
+            <div class="form-inline">
+                <label class="mr-2 mb-0">Tampilkan:</label>
+                <select class="form-control form-control-sm" id="${this.tableId}_page_size">
+                    ${options}
+                </select>
+                <span class="ml-2 mb-0">data</span>
+            </div>
+        `;
+
+        // Bind page size change event
+        const pageSizeSelect = document.getElementById(this.tableId + '_page_size');
+        if (pageSizeSelect) {
+            pageSizeSelect.addEventListener('change', (e) => {
+                this.pageSize = parseInt(e.target.value);
+                this.currentPage = 1;
+                this.applySearchAndFilters();
+            });
+        }
+    }
+
+    /**
+     * Render pagination controls
+     */
+    renderPaginationControls() {
+        if (!this.options.enablePagination) return;
+
+        const container = document.getElementById(this.tableId + '_pagination_controls');
+        if (!container) return;
+
+        this.totalPages = Math.ceil(this.filteredData.length / this.pageSize);
+
+        if (this.totalPages <= 1) {
+            container.innerHTML = '';
+            return;
+        }
+
+        let html = '<ul class="pagination pagination-sm mb-0">';
+
+        // Previous button
+        html += `
+            <li class="page-item ${this.currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="window.appDataTable_${this.tableId}.goToPage(${this.currentPage - 1}); return false;">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+        `;
+
+        // Page numbers
+        const maxButtons = 5;
+        let startPage = Math.max(1, this.currentPage - Math.floor(maxButtons / 2));
+        let endPage = Math.min(this.totalPages, startPage + maxButtons - 1);
+
+        if (endPage - startPage < maxButtons - 1) {
+            startPage = Math.max(1, endPage - maxButtons + 1);
+        }
+
+        if (startPage > 1) {
+            html += `
+                <li class="page-item">
+                    <a class="page-link" href="#" onclick="window.appDataTable_${this.tableId}.goToPage(1); return false;">1</a>
+                </li>
+            `;
+            if (startPage > 2) {
+                html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            html += `
+                <li class="page-item ${i === this.currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="window.appDataTable_${this.tableId}.goToPage(${i}); return false;">${i}</a>
+                </li>
+            `;
+        }
+
+        if (endPage < this.totalPages) {
+            if (endPage < this.totalPages - 1) {
+                html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+            html += `
+                <li class="page-item">
+                    <a class="page-link" href="#" onclick="window.appDataTable_${this.tableId}.goToPage(${this.totalPages}); return false;">${this.totalPages}</a>
+                </li>
+            `;
+        }
+
+        // Next button
+        html += `
+            <li class="page-item ${this.currentPage === this.totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="window.appDataTable_${this.tableId}.goToPage(${this.currentPage + 1}); return false;">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        `;
+
+        html += '</ul>';
+        container.innerHTML = html;
+    }
+
+    /**
+     * Render pagination info
+     */
+    renderPaginationInfo() {
+        if (!this.options.showPaginationInfo) return;
+
+        const container = document.getElementById(this.tableId + '_pagination_info');
+        if (!container) return;
+
+        const start = (this.currentPage - 1) * this.pageSize + 1;
+        const end = Math.min(this.currentPage * this.pageSize, this.filteredData.length);
+        const total = this.filteredData.length;
+
+        container.innerHTML = `
+            <p class="mb-0 text-muted">
+                Menampilkan <strong>${start}</strong> - <strong>${end}</strong> dari <strong>${total}</strong> data
+            </p>
+        `;
+    }
+
+    /**
+     * Go to specific page
+     */
+    goToPage(pageNumber) {
+        if (pageNumber < 1 || pageNumber > this.totalPages) return;
+        this.currentPage = pageNumber;
+        this.renderFiltered();
     }
 
     /**
@@ -207,21 +383,47 @@ class AppDataTable {
     }
 
     /**
-     * Render filtered data
+     * Render filtered data with pagination
      */
     renderFiltered() {
         if (this.filteredData.length === 0 && (this.searchTerm || Object.keys(this.activeFilters).length > 0)) {
             this.showEmpty('Tidak ada data yang sesuai dengan pencarian atau filter');
+            this.renderPaginationInfo();
+            this.renderPaginationControls();
             return;
         }
 
-        let html = '';
+        if (this.filteredData.length === 0) {
+            this.showEmpty();
+            this.renderPaginationInfo();
+            this.renderPaginationControls();
+            return;
+        }
 
-        this.filteredData.forEach((item, index) => {
+        // Calculate pagination
+        this.totalPages = Math.ceil(this.filteredData.length / this.pageSize);
+
+        // Ensure current page is valid
+        if (this.currentPage > this.totalPages) {
+            this.currentPage = this.totalPages;
+        }
+        if (this.currentPage < 1) {
+            this.currentPage = 1;
+        }
+
+        // Get data for current page
+        const startIndex = (this.currentPage - 1) * this.pageSize;
+        const endIndex = Math.min(startIndex + this.pageSize, this.filteredData.length);
+        const pageData = this.filteredData.slice(startIndex, endIndex);
+
+        // Render table rows
+        let html = '';
+        pageData.forEach((item, index) => {
             html += '<tr>';
 
             if (this.options.showNumbering) {
-                html += `<td class="text-center">${index + 1}</td>`;
+                const rowNumber = startIndex + index + 1;
+                html += `<td class="text-center">${rowNumber}</td>`;
             }
 
             this.columns.forEach(column => {
@@ -232,6 +434,10 @@ class AppDataTable {
         });
 
         this.tbody.innerHTML = html;
+
+        // Update pagination controls
+        this.renderPaginationInfo();
+        this.renderPaginationControls();
 
         if (this.options.enableTooltips && typeof $('[data-toggle="tooltip"]').tooltip === 'function') {
             $('[data-toggle="tooltip"]').tooltip();

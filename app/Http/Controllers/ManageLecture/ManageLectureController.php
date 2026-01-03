@@ -5,6 +5,7 @@ namespace App\Http\Controllers\ManageLecture;
 use App\Models\Lecture;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Crypt;
 
 class ManageLectureController extends Controller
 {
@@ -138,9 +139,66 @@ class ManageLectureController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit_data(string $id)
     {
-        //
+        try {
+            # lakukan dekrip pada id yang terenkrpisi
+            $decryptedId = Crypt::decryptString($id);
+
+            # validasi id
+            if (!is_numeric($decryptedId)) {
+                return response()->json([
+                    'code' => 400,
+                    'status' => 'error',
+                    'message' => 'ID tidak valid atau corrupt!',
+                    'data' => null
+                ], 400);
+            }
+
+            # jika data id valid ambil data dosen berdasarkan id tersebut
+            $getLecture = Lecture::find($decryptedId);  // ✅ PERBAIKAN: Gunakan $decryptedId, bukan $id
+
+            # validasi apakah data ditemukan
+            if (!$getLecture) {
+                return response()->json([
+                    'code' => 404,
+                    'status' => 'error',
+                    'message' => 'Data dosen tidak ditemukan!',
+                    'data' => null
+                ], 404);
+            }
+
+            # return data untuk form edit
+            return response()->json([
+                'code' => 200,
+                'status' => 'success',
+                'message' => 'Data dosen berhasil ditemukan',
+                'data' => [
+                    'id' => Crypt::encryptString($getLecture->id),
+                    'nidn' => $getLecture->nidn,
+                    'nama_dosen' => $getLecture->name,
+                    'spesialis' => $getLecture->expertise,
+                    'status_aktif' => $getLecture->is_active
+                ]
+            ]);
+
+        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            # Handle decryption error
+            return response()->json([
+                'code' => 400,
+                'status' => 'error',
+                'message' => 'ID tidak valid atau sudah kedaluwarsa!',
+                'data' => null
+            ], 400);
+        } catch (\Exception $e) {
+            # Handle general error
+            return response()->json([
+                'code' => 500,
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                'data' => null
+            ], 500);
+        }
     }
 
     /**
@@ -148,7 +206,73 @@ class ManageLectureController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        try {
+            # Decrypt the encrypted ID
+            $decryptedId = Crypt::decryptString($id);
+
+            # Validate ID is numeric
+            if (!is_numeric($decryptedId)) {
+                return response()->json([
+                    'code' => 400,
+                    'status' => 'error',
+                    'message' => 'ID tidak valid atau corrupt!'
+                ], 400);
+            }
+
+            # Find lecture by decrypted ID
+            $lecture = Lecture::find($decryptedId);
+
+            # Validate data found
+            if (!$lecture) {
+                return response()->json([
+                    'code' => 404,
+                    'status' => 'error',
+                    'message' => 'Data dosen tidak ditemukan!'
+                ], 404);
+            }
+
+            # Validate request data
+            $validateRequest = $request->validate([
+                'nidn' => 'required',
+                'nama_dosen' => 'required',
+                'spesialis' => 'required',
+                'status_aktif' => 'required'
+            ]);
+
+            # Update data
+            $lecture->update([
+                'nidn' => $request->nidn,
+                'name' => $request->nama_dosen,
+                'expertise' => $request->spesialis,
+                'is_active' => $request->status_aktif
+            ]);
+
+            return response()->json([
+                'code' => 200,
+                'status' => 'success',
+                'message' => 'Data berhasil diupdate'
+            ]);
+
+        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            return response()->json([
+                'code' => 400,
+                'status' => 'error',
+                'message' => 'ID tidak valid atau sudah kedaluwarsa!'
+            ], 400);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'code' => 422,
+                'status' => 'error',
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'code' => 500,
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

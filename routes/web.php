@@ -32,6 +32,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     **/
         Route::get('/manage-lecture', [ManageLectureController::class, 'index'])->name('lecture');
         Route::post('/manage-lecture/store', [ManageLectureController::class, 'store'])->name('lecture.store');
+        Route::get('/manage-lecture/edit/{id}', [ManageLectureController::class, 'edit_data'])->name('lecture.edit');
     /**
      * ---------------------------------------------------------------------------------------------------------------------------
      * End route                                                                                                                 |
