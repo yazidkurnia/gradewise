@@ -17,6 +17,10 @@ class ManageLectureController extends Controller
         # init title page
         $title = 'Manage Data Dosen';
 
+        # count total dosen
+        $totalAllLecture = Lecture::where('is_active', 1)->get();
+        $totalAllLecture = count($totalAllLecture);
+
         # init datatable configuration
         $tableConfig = [
             # judul datatable
@@ -87,7 +91,8 @@ class ManageLectureController extends Controller
             ]
         ];
 
-        $compact = compact('tableConfig', 'title');
+        # set compact
+        $compact = compact('tableConfig', 'title', 'totalAllLecture');
 
         return view('pages.manage_lecture.index', $compact);
     }

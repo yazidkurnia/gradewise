@@ -10,6 +10,36 @@
     </div>
 
     <div class="section-body">
+
+        <div class="row mx-0">
+            <div class="card mr-3">
+                <div class="card-header text-dark">
+                    Total Seluruh Dosen Aktif
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h3 class="text-primary">{{ $totalAllLecture }}</h3>
+                            <span>Dosen Aktif</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header text-dark">
+                    Total Seluruh Dosen Tidak Aktif
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <h3 class="text-danger">{{ $totalAllLecture }}</h3>
+                            <span>Dosen Tidak Aktif</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="card">
             <div class="card-header row">
                 <div class="col-6 d-flex justify-content-start">
