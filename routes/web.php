@@ -33,6 +33,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::get('/manage-lecture', [ManageLectureController::class, 'index'])->name('lecture');
         Route::post('/manage-lecture/store', [ManageLectureController::class, 'store'])->name('lecture.store');
         Route::get('/manage-lecture/edit/{id}', [ManageLectureController::class, 'edit_data'])->name('lecture.edit');
+        Route::put('/manage-lecture/{id}', [ManageLectureController::class, 'update'])->name('lecture.update');
+        Route::delete('/manage-lecture/clear/{id}', [ManageLectureController::class, 'destroy'])->name('lecture.destroy');
     /**
      * ---------------------------------------------------------------------------------------------------------------------------
      * End route                                                                                                                 |

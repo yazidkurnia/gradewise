@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\ManageLecture;
 
+use App\Repositories\LectureRepository;
 use App\Models\Lecture;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -285,6 +286,46 @@ class ManageLectureController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        try {
+            # Decrypt the encrypted ID
+            $decryptedId = Crypt::decryptString($id);
+
+            # Find lecture by decrypted ID
+            $lecture = Lecture::find($decryptedId);
+
+            # Validate data found
+            if (!$lecture) {
+                return response()->json([
+                    'code' => 404,
+                    'status' => 'error',
+                    'message' => 'Data dosen tidak ditemukan!'
+                ], 404);
+            }
+
+            # Store lecture name for response message
+            $lectureName = $lecture->name;
+
+            # Delete the lecture
+            $lecture->delete();
+
+            return response()->json([
+                'code' => 200,
+                'status' => 'success',
+                'message' => "Data dosen '{$lectureName}' berhasil dihapus"
+            ]);
+
+        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            return response()->json([
+                'code' => 400,
+                'status' => 'error',
+                'message' => 'ID tidak valid atau sudah kedaluwarsa!'
+            ], 400);
+        } catch (\Exception $e) {
+            return response()->json([
+                'code' => 500,
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

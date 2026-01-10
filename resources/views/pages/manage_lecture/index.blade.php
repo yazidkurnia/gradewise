@@ -317,7 +317,7 @@
 
                     // Delete via AJAX
                     $.ajax({
-                        url: '{{ url('lectures') }}/' + encryptedId,
+                        url: '{{ url('/manage-lecture/clear/') }}/' + encryptedId,
                         method: 'DELETE',
                         headers: {
                             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')

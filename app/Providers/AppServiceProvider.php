@@ -13,7 +13,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        // Bind LectureRepository interface to implementation
+        $this->app->bind(
+            \App\Contracts\LectureRepositoryInterface::class,
+            \App\Repositories\LectureRepository::class
+        );
     }
 
     /**
