@@ -95,7 +95,7 @@ class StudentController extends Controller
         return response()->json([
             'code' => 200,
             'message' => 'Berhasil mendapatkan data',
-            'data' => []
+            'data' => $data
         ]);
     }
 }

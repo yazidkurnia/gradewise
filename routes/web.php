@@ -74,8 +74,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
 Route::get('/student', [StudentController::class, 'index'])->name('student');
 Route::post('/student/store', [StudentController::class, 'create'])->name('student.create');
-Route::put('/student/update/{student}', [StudentController::class, 'update'])->name('student.update');
 Route::get('/student/edit/{std}', [StudentController::class, 'edit'])->name('student.edit');
+Route::put('/student/update/{student}', [StudentController::class, 'update'])->name('student.update');
 Route::delete('/student/delete/{std}', [StudentController::class, 'destroy'])->name('student.destroy');
 
 

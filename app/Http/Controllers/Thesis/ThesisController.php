@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ThesisRequest;
 use App\Contracts\ThesisRepositoryInterface;
+use App\Contracts\StudentRepositoryInterface;
 
 class ThesisController extends Controller
 {
@@ -14,13 +15,15 @@ class ThesisController extends Controller
      * Thesis Repository instance
      */
     protected $thesisRepository;
+    protected $studentRepository;
 
     /**
      * Constructor with dependency injection
      */
-    public function __construct(ThesisRepositoryInterface $thesisRepository)
+    public function __construct(ThesisRepositoryInterface $thesisRepository, StudentRepositoryInterface $studentRepository)
     {
         $this->thesisRepository = $thesisRepository;
+        $this->studentRepository = $studentRepository;
     }
 
     /**
@@ -102,8 +105,11 @@ class ThesisController extends Controller
         // Fetch all thesis data using repository
         $data = $this->thesisRepository->fetch_all();
 
+        // Fetch all data student
+        $dataStudent = $this->studentRepository->fetch_all();
+
         $tableConfig = $this->settup_datatable();
-        $compact = compact('title', 'data', 'tableConfig');
+        $compact = compact('title', 'data', 'tableConfig', 'dataStudent');
         return view('pages.theses.index', $compact);
     }
 
@@ -123,7 +129,7 @@ class ThesisController extends Controller
         try {
 
             // Check if student already has thesis
-            $existingThesis = Thesis::where('student_id', $request->student_id)->first();
+            $existingThesis = $this->thesisRepository->fetch_with_student();
             if ($existingThesis) {
                 return response()->json([
                     'code' => 422,

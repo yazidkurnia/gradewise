@@ -103,6 +103,11 @@
                             <select class="form-control select-student" id="student_id" name="student_id"
                                 style="width: 100%;">
                                 <option value="">-- Pilih Mahasiswa --</option>
+                                @forelse ($dataStudent as $list)
+                                    <option value="{{ $list->id }}">{{ $list->name }}</option>
+                                @empty
+                                    <option value="">Tidak ada mahasiswa</option>
+                                @endforelse
                             </select>
                             <small class="form-text text-muted">Pilih mahasiswa yang akan mengajukan skripsi</small>
                         </div>
@@ -146,7 +151,7 @@
 
 @push('scripts')
     {{-- Select2 JS CDN --}}
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    {{-- <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script> --}}
     {{-- Include AppDataTable component --}}
     <script src="{{ asset('assets/js/components/app-datatable.js') }}"></script>
 
@@ -338,6 +343,8 @@
 
             // Get form data
             var formData = new FormData($('#formPost')[0]);
+
+            console.log(formData);
 
             // Submit via AJAX
             $.ajax({

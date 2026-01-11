@@ -40,4 +40,13 @@ class ThesisRepository implements ThesisRepositoryInterface
                      ->whereNull('deleted_at')
                      ->get();
     }
+
+    /**
+     * Fetch student data
+     * 
+     * @return Thesis with param
+     */
+    public function fetch_with_student(int $id): Thesis{
+        return Thesis::where('student_id', $studentId)->first();
+    }   
 }

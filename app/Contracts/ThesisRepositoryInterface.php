@@ -26,4 +26,6 @@ interface ThesisRepositoryInterface
     public function findById(int $id): ?Thesis;
 
     public function fetch_all_with_student(): Collection;
+
+    public function fetch_with_student(int $studentId): ?Thesis;
 }
