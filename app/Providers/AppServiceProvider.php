@@ -24,6 +24,12 @@ class AppServiceProvider extends ServiceProvider
             \App\Contracts\ThesisRepositoryInterface::class,
             \App\Repositories\ThesisRepository::class
         );
+
+        // Bind StudentRepository interface to implementation
+        $this->app->bind(
+            \App\Contracts\StudentRepositoryInterface::class,
+            \App\Repositories\StudentRepository::class
+        );
     }
 
     /**

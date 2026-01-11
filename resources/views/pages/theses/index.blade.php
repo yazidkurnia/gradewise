@@ -242,7 +242,7 @@
          */
         function loadStudents() {
             $.ajax({
-                url: '{{ route('student') }}', // Adjust this to your student API endpoint
+                url: '{{ route('student.list') }}', // Adjust this to your student API endpoint
                 method: 'GET',
                 success: function(response) {
                     // Clear existing options except placeholder

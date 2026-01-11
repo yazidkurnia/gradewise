@@ -4,9 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\Student;
 use Illuminate\Http\Request;
+use App\Contracts\StudentRepositoryInterface;
 
 class StudentController extends Controller
 {
+    /**
+     * Thesis Repository instance
+     */
+    protected $studentRepository;
+
+    /**
+     * Constructor with dependency injection
+     */
+    public function __construct(StudentRepositoryInterface $studentRepository)
+    {
+        $this->studentRepository = $studentRepository;
+    }
     // READ
     public function index()
     {
@@ -66,5 +79,23 @@ class StudentController extends Controller
         $student->delete();
         return redirect()->route('student.index')
                          ->with('success', 'Data berhasil dihapus');
+    }
+
+    public function fetch_all() {
+        $data = $this->studentRepository->fetch_all();
+
+        if (empty($data)) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'Maaf data tidak ditemukan',
+                'data' => NULL
+            ]);
+        }
+
+        return response()->json([
+            'code' => 200,
+            'message' => 'Berhasil mendapatkan data',
+            'data' => []
+        ]);
     }
 }
