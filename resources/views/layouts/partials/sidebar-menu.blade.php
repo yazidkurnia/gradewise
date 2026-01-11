@@ -11,7 +11,7 @@
 <li class="menu-header">Setting</li>
 <li class="{{ $title == 'Manage Data Mahasiswa' ? 'active' : '' }}">
     <a href="{{ route('student') }}" class="nav-link">
-        <i class="fas fa-graduation"></i>
+        <i class="fas fa-graduation-cap"></i>
         <span>Student</span>
     </a>
 </li>
@@ -21,6 +21,14 @@
     <a href="{{ route('lecture') }}" class="nav-link ">
         <i class="fas fa-school"></i>
         <span>Manage Data Dosen</span>
+    </a>
+</li>
+<li class="menu-header">Skripsi</li>
+<li class="{{ $title == 'Skripsi Mahasiswa' ? 'active' : '' }}">
+
+    <a href="{{ route('thesis') }}" class="nav-link ">
+        <i class="fas fa-person-chalkboard"></i>
+        <span>Data Skripsi</span>
     </a>
 </li>
 

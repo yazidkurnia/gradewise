@@ -19,6 +19,7 @@
                 <section class="section">
                     @yield('content')
                 </section>
+                @yield('modal')
             </div>
 
             {{-- Footer --}}

@@ -10,21 +10,10 @@ use Illuminate\Support\Facades\Crypt;
 
 class ManageLectureController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        # init title page
-        $title = 'Manage Data Dosen';
-
-        # count total dosen
-        $totalAllLecture = Lecture::where('is_active', 1)->get();
-        $totalAllLecture = count($totalAllLecture);
-
-        # init datatable configuration
+    private function settup_datatable(){
+        return         # init datatable configuration
         $tableConfig = [
-            # judul datatable
+            # judul datatable 
             'title' => 'Table data dosen',
             # table header
             'tableHead' => [
@@ -91,6 +80,21 @@ class ManageLectureController extends Controller
                 // ]
             ]
         ];
+    }
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+        # init title page
+        $title = 'Manage Data Dosen';
+
+        # count total dosen
+        $totalAllLecture = Lecture::where('is_active', 1)->get();
+        $totalAllLecture = count($totalAllLecture);
+
+        $tableConfig = $this->settup_datatable();
 
         # set compact
         $compact = compact('tableConfig', 'title', 'totalAllLecture');
