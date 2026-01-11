@@ -194,8 +194,5 @@ class ThesisController extends Controller
     {
         //
     }
-
-    public function fetch_mahasiswa_aktif() {
-        
-    }
+    
 }
