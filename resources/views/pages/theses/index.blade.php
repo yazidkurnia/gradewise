@@ -1,6 +1,7 @@
 @extends('layouts.master')
 
 @section('content')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <div class="section-header">
         <h1>{{ $title }}</h1>
         <div class="section-header-breadcrumb">
@@ -96,42 +97,44 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form action="" method="post" id="formPost">
+                    <form action="" method="post" id="formPost" enctype="multipart/form-data">
                         @csrf
+
+                        {{-- Mahasiswa --}}
                         <div class="form-group">
                             <label for="student_id">Mahasiswa <span class="text-danger">*</span></label>
-                            <select class="form-control select-student" id="student_id" name="student_id"
-                                style="width: 100%;">
+                            <select class="form-control select-student" name="student_id" id="student_id" required>
                                 <option value="">-- Pilih Mahasiswa --</option>
-                                @forelse ($dataStudent as $list)
-                                    <option value="{{ $list->id }}">{{ $list->name }}</option>
-                                @empty
-                                    <option value="">Tidak ada mahasiswa</option>
-                                @endforelse
+                                @foreach ($dataStudent as $list)
+                                    <option value="{{ $list->encrypted_id }}">{{ $list->name }}</option>
+                                @endforeach
                             </select>
-                            <small class="form-text text-muted">Pilih mahasiswa yang akan mengajukan skripsi</small>
                         </div>
+
+                        {{-- Judul --}}
                         <div class="form-group">
                             <label for="title">Judul Skripsi <span class="text-danger">*</span></label>
-                            <textarea class="form-control" name="title" id="title" rows="3" placeholder="Masukkan judul skripsi"></textarea>
+                            <textarea class="form-control" name="title" id="title" rows="3" required></textarea>
                         </div>
+
+                        {{-- Tanggal Mulai --}}
                         <div class="form-group">
-                            <label for="description">Deskripsi</label>
-                            <textarea class="form-control" name="description" id="description" rows="4"
-                                placeholder="Masukkan deskripsi singkat (opsional)"></textarea>
+                            <label for="start_date">Tanggal Mulai <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" name="start_date" id="start_date" required>
                         </div>
+
+                        {{-- Dokumen Final --}}
                         <div class="form-group">
-                            <label for="status">Status <span class="text-danger">*</span></label>
-                            <select class="form-control" name="status" id="status">
-                                <option value="">-- Pilih Status --</option>
-                                <option value="pending">Pending</option>
-                                <option value="approved">Approved</option>
-                                <option value="rejected">Rejected</option>
-                                <option value="in_progress">In Progress</option>
-                                <option value="completed">Completed</option>
-                            </select>
+                            <label for="final_document_url">Dokumen Proposal / Skripsi</label>
+                            <input type="file" class="form-control" name="final_document_url" id="final_document_url"
+                                accept=".pdf,.doc,.docx">
+                            <small class="text-muted">PDF / DOC / DOCX</small>
                         </div>
+
+                        {{-- Status (Hidden karena default Aktif) --}}
+                        <input type="hidden" name="status" value="Aktif">
                     </form>
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -320,14 +323,14 @@
                 return;
             }
 
-            if (!$('#status').val()) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Perhatian',
-                    text: 'Pilih status terlebih dahulu!'
-                });
-                return;
-            }
+            // if (!$('#status').val()) {
+            //     Swal.fire({
+            //         icon: 'warning',
+            //         title: 'Perhatian',
+            //         text: 'Pilih status terlebih dahulu!'
+            //     });
+            //     return;
+            // }
 
             // Close modal and show loading
             $('#myModal').modal('hide');
@@ -354,13 +357,23 @@
                 processData: false,
                 contentType: false,
                 success: function(response) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: 'Data skripsi berhasil disimpan',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
+                    if (response.status == 'failed') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: response.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Data skripsi berhasil disimpan',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
                     resetForm();
                     get_all_data();
                 },
@@ -378,5 +391,37 @@
                 }
             });
         }
+
+        function delete_data(thesisId){
+            // deletedForm
+            if (thesisId == null || thesisId == "") {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Perhatian',
+                    text: 'Terjadi kesalahan pada proses penghapusan data, data tidak valid atau corrupt!'
+                });
+                return;
+            }
+
+            $.ajax({
+                url: '{{ route('thesis.destroy') }}',
+                method: 'DELETE',
+                data: {
+                    id: thesisId
+                }, 
+                success: function(response){
+                    console.log(response);
+                },
+                error: function(jXHR, textResponse, throwError){
+                    console.log(jXHR);
+                }
+            })
+        }
+
+            $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
     </script>
 @endpush

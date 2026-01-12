@@ -6,8 +6,10 @@ use App\Models\Thesis;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ThesisRequest;
+use Illuminate\Support\Facades\Crypt;
 use App\Contracts\ThesisRepositoryInterface;
 use App\Contracts\StudentRepositoryInterface;
+use App\Services\Thesis\ThesisService;
 
 class ThesisController extends Controller
 {
@@ -16,83 +18,18 @@ class ThesisController extends Controller
      */
     protected $thesisRepository;
     protected $studentRepository;
+    protected $thesisService;
 
     /**
      * Constructor with dependency injection
      */
-    public function __construct(ThesisRepositoryInterface $thesisRepository, StudentRepositoryInterface $studentRepository)
-    {
-        $this->thesisRepository = $thesisRepository;
+    public function __construct(
+        ThesisRepositoryInterface $thesisRepository, 
+        StudentRepositoryInterface $studentRepository, 
+        ThesisService $thesisService) {
+        $this->thesisRepository  = $thesisRepository;
         $this->studentRepository = $studentRepository;
-    }
-
-    /**
-     * Setup datatable configuration for thesis
-     *
-     * @return array
-     */
-    private function settup_datatable()
-    {
-        // Init datatable configuration
-        return [
-            // Judul datatable
-            'title' => 'Table Data Skripsi Mahasiswa',
-            // Table header
-            'tableHead' => [
-                'No',
-                'Nama Mahasiswa',
-                'NIM',
-                'Judul Skripsi',
-                'Status',
-                'Tindakan'
-            ],
-            // Table id
-            'tableId' => 'table_thesis',
-            // API endpoint URL
-            'url_data' => route('thesis.all'),
-            // Column configuration for AppDataTable
-            'columns' => [
-                [
-                    'field' => 'name',
-                    'label' => 'Nama Mahasiswa',
-                ],
-                [
-                    'field' => 'nim',
-                    'label' => 'NIM',
-                ],
-                [
-                    'field' => 'title',
-                    'label' => 'Judul Skripsi',
-                ],
-                [
-                    'field' => 'status',
-                    'label' => 'Status',
-                    'type' => 'badge'
-                ],
-                [
-                    'field' => 'action',
-                    'label' => 'Tindakan',
-                    'type' => 'actions'
-                ]
-            ],
-            // Search configuration - Define which fields are searchable
-            'search' => [
-                'fields' => ['title', 'name', 'nim']
-            ],
-            // Filter configuration - Define custom filters
-            'filters' => [
-                [
-                    'field' => 'status',
-                    'label' => 'Status',
-                    'placeholder' => 'Semua Status',
-                    'options' => [
-                        ['value' => 'pending', 'label' => 'Pending'],
-                        ['value' => 'approved', 'label' => 'Approved'],
-                        ['value' => 'rejected', 'label' => 'Rejected']
-                    ]
-                ]
-            ]
-        ];
+        $this->thesisService     = $thesisService;
     }
 
     /**
@@ -108,17 +45,13 @@ class ThesisController extends Controller
         // Fetch all data student
         $dataStudent = $this->studentRepository->fetch_all();
 
-        $tableConfig = $this->settup_datatable();
+        foreach ($dataStudent as $list) {
+            $list->encrypted_id = Crypt::encryptString($list->id);
+        }
+
+        $tableConfig = $this->thesisService->settup_datatable();
         $compact = compact('title', 'data', 'tableConfig', 'dataStudent');
         return view('pages.theses.index', $compact);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -126,79 +59,15 @@ class ThesisController extends Controller
      */
     public function store(ThesisRequest $request)
     {
-        try {
-
-            // Check if student already has thesis
-            $existingThesis = $this->thesisRepository->fetch_with_student();
-            if ($existingThesis) {
-                return response()->json([
-                    'code' => 422,
-                    'status' => 'error',
-                    'message' => 'Mahasiswa ini sudah memiliki skripsi!'
-                ], 422);
-            }
-
-            // Create thesis
-            $thesis = Thesis::create([
-                'student_id' => $request->student_id,
-                'title' => $request->title,
-                'description' => $request->description,
-                'status' => $request->status
-            ]);
-
-            return response()->json([
-                'code' => 200,
-                'status' => 'success',
-                'message' => 'Data skripsi berhasil disimpan',
-                'data' => $thesis
-            ]);
-
-        } catch (ValidationException $e) {
-            return response()->json([
-                'code' => 422,
-                'status' => 'error',
-                'message' => 'Validasi gagal',
-                'errors' => $e->errors()
-            ], 422);
-        } catch (\Exception $e) {
-            return response()->json([
-                'code' => 500,
-                'status' => 'error',
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ], 500);
-        }
+        return $this->thesisService->store($request->validated());
     }
 
     /**
-     * Display the specified resource.
+     * Delete data
      */
-    public function show(string $id)
+    public function destroy(Request $request) 
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return $this->thesisService->delete_data($request->id);
     }
     
 }

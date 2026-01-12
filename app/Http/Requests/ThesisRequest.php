@@ -11,7 +11,7 @@ class ThesisRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -19,12 +19,13 @@ class ThesisRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-    public function rules(): array
+    public function rules()
     {
         return [
-            'student_id' => 'required',
-            'title' => 'required',
-            'desc' => 'required'
+            'student_id'         => 'required|string',
+            'title'              => 'required|string|max:255',
+            'start_date'         => 'required|date',
+            'final_document_url' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
         ];
     }
 }

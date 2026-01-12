@@ -139,7 +139,7 @@ class ApiDataTable extends Controller
                         </button>
                         <button type="button"
                                 class="btn btn-danger"
-                                onclick="deleteData(\'' . $encryptedId . '\')"
+                                onclick="delete_data(\'' . $encryptedId . '\')"
                                 data-toggle="tooltip"
                                 title="Hapus">
                             <i class="fas fa-trash"></i>

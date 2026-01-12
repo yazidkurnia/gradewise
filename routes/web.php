@@ -23,7 +23,7 @@ Route::get('/', function () {
 });
 
 // Dashboard Route
-Route::middleware(['auth', 'role:admin'])->group(function () {
+Route::middleware(['auth', 'role:Administrator'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     /**
@@ -44,6 +44,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     **/
         Route::get('/thesis', [ThesisController::class, 'index'])->name('thesis');
         Route::post('/thesis/new', [ThesisController::class, 'store'])->name('thesis.store');
+        Route::delete('/thesis/remove/item', [ThesisController::class, 'destroy'])->name('thesis.destroy');
 
     /**
      * ---------------------------------------------------------------------------------------------------------------------------

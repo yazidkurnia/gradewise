@@ -10,7 +10,8 @@ class Thesis extends Model
     protected $fillable = [
         'student_id',
         'title',
-        'description',
+        'start_date',
+        'file_document_url',
         'status',
     ];
 
