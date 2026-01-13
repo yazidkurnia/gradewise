@@ -47,6 +47,6 @@ class ThesisRepository implements ThesisRepositoryInterface
      * @return Thesis with param
      */
     public function fetch_with_student(int $id): Thesis{
-        return Thesis::where('student_id', $studentId)->first();
+        return Thesis::where('student_id', $id)->first();
     }   
 }

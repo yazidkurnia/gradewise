@@ -2,9 +2,20 @@
 
 namespace App\Services\Thesis;
 
+use App\Models\Thesis;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Crypt;
+use App\Repositories\ThesisRepository;
 
 class ThesisService {
+
+    protected $thesisRepository;
+
+    public function __construct(
+        ThesisRepository $thesisRepository
+    ){
+        $this->thesisRepository = $thesisRepository;
+    }
 
     public function settup_datatable() {
                 return [
@@ -72,6 +83,17 @@ class ThesisService {
         $studentId       = Crypt::decryptString($dataStore['student_id']);
         $thesisTitle     = $dataStore['title'];
         $thesisStartDate = $dataStore['start_date'];
+        $fileThesis      = $dataStore['final_document_url'];
+
+        // find thesis by student_id
+        $checkExistingData = $this->thesisRepository->fetch_with_student((int)$studentId);
+
+        if ($checkExistingData != NULL) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'Oops! sepertinya kamu sudah pernah mendaftarkan diri silahkan check proses!'
+            ]);
+        }
 
         if($thesisTitle == '' || empty($thesisTitle)) {
             return response()->json([
@@ -87,11 +109,75 @@ class ThesisService {
             ]);
         }
 
-        $dataStore = [
-            'student_id' => $studentId,
-            'title'      => $thesisTitle,
-            'start_date' => $thesisStartDate
-        ];
+        // ------------------------------------------------------------------------------------------------------------------ //
+        //                                                     handle file upload                                             //
+        // ------------------------------------------------------------------------------------------------------------------ //
+
+        $hashFileName = $fileThesis->hashName();
+        if ($fileThesis->getSize() > 5024) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'Oops! Sepertinya ukuran file terlalu besar, silakukan lakukan kompres file sebelum kembali mengupload!'
+            ]);
+        }
+
+        $allowedExt = ['pdf', 'doc', 'jpg', 'JPG', 'png', 'PNG'];
+
+        $fileExt = $fileThesis->getClientOriginalExtension();
+
+        if (!in_array($fileExt, $allowedExt)) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'Oops! Maaf tipe file yang diupload tidak diizinkan!'
+            ]);
+        }
+
+        $path = $fileThesis->store();
+
+        // ------------------------------------------------------------------------------------------------------------------ //
+        //                                                 end handle file upload                                             //
+        // ------------------------------------------------------------------------------------------------------------------ //
+        
+        if (empty($path)) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'Oops! Maaf sepertinya upload file tidak berhasil silahkan coba kembali jika terus berulang silahkan hubungi administrator!'
+            ]);
+        }
+
+        // ------------------------------------------------------------------------------------------------------------------ //
+        //                                                     DB Transaction                                                 //
+        // ------------------------------------------------------------------------------------------------------------------ //
+
+        try {
+            # code...
+            DB::beginTransaction();
+              $createNewData = [
+                'student_id'         => $studentId,
+                'title'              => $thesisTitle,
+                'final_document_url' => $path,
+                'start_date'         => $thesisStartDate,
+                'status'             => 'Aktif'
+            ];
+            Thesis::create($createNewData);
+            DB::commit();
+
+            return response()->json([
+                'status' => 'Success',
+                'message' => 'Yeay! Data dan file berhasil disimpan!'
+            ]);
+        } catch (\Throwable $e) {
+            # code...
+            DB::rollback();
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'Oops! Maaf sepertinya upload file tidak berhasil silahkan coba kembali jika terus berulang silahkan hubungi administrator!'
+            ]);
+        }
+
+        // ------------------------------------------------------------------------------------------------------------------ //
+        //                                                 end DB Transaction                                                 //
+        // ------------------------------------------------------------------------------------------------------------------ //
     }
 
     public function destroy($thesisId){

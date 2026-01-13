@@ -11,7 +11,7 @@ class Thesis extends Model
         'student_id',
         'title',
         'start_date',
-        'file_document_url',
+        'final_document_url',
         'status',
     ];
 
