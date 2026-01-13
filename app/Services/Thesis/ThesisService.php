@@ -180,7 +180,30 @@ class ThesisService {
         // ------------------------------------------------------------------------------------------------------------------ //
     }
 
-    public function destroy($thesisId){
-        dd($thesisId);
+    public function delete_data($thesisId){
+        
+        if ($thesisId == '') {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'Oups! terjadi kesalahan saat menghapus data! data corrupt atau tidak lagi tersedia'
+                ]);
+        }
+
+        $decryptedId = Crypt::decryptString($thesisId);
+
+        try {
+            DB::beginTransaction();
+            Thesis::destroy($decryptedId);
+            DB::commit();
+            return response()->json([
+                'status' => 'Success',
+                'message' => 'Yeay! Data berhasil dihapus!'
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'Oops! Data tidak berhasil dihapus silahkan coba kembali jika terus berulang silahkan hubungi administrator sistem!'
+            ]);
+        }
     }
 }

@@ -392,7 +392,7 @@
             });
         }
 
-        function delete_data(thesisId){
+        function delete_data(thesisId) {
             // deletedForm
             if (thesisId == null || thesisId == "") {
                 Swal.fire({
@@ -403,25 +403,52 @@
                 return;
             }
 
+            Swal.fire({
+                title: 'Menghapus Data...',
+                text: 'Mohon tunggu',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
             $.ajax({
                 url: '{{ route('thesis.destroy') }}',
                 method: 'DELETE',
                 data: {
                     id: thesisId
-                }, 
-                success: function(response){
-                    console.log(response);
                 },
-                error: function(jXHR, textResponse, throwError){
+                success: function(response) {
+                    if (response.status == 'failed') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: response.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Data skripsi berhasil dihapus',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+                    // resetForm();
+                    get_all_data();
+                },
+                error: function(jXHR, textResponse, throwError) {
                     console.log(jXHR);
                 }
             })
         }
 
-            $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
     </script>
 @endpush
