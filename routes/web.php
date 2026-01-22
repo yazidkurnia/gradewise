@@ -1,11 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\StudentController;
+use App\Http\Controllers\Student\StudentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Datatables\ApiDataTable;
 use App\Http\Controllers\Thesis\ThesisController;
 use App\Http\Controllers\ManageLecture\ManageLectureController;
+use Symfony\Component\Routing\Route as RoutingRoute;
 
 /*
 |--------------------------------------------------------------------------
@@ -70,15 +71,24 @@ Route::middleware(['auth', 'role:Administrator'])->group(function () {
 
 });
 
-// Route::get('/student', [StudentController::class, 'index'])->name('student');
-// Route::resource('student', StudentController::class);
+//Route::get('/student', [StudentController::class, 'index'])->name('student');
+//Route::resource('student', StudentController::class);
 
 Route::get('/student', [StudentController::class, 'index'])->name('student');
-Route::post('/student/store', [StudentController::class, 'create'])->name('student.create');
+Route::post('/student/create', [StudentController::class, 'create'])->name('student.create');
 Route::get('/student/edit/{std}', [StudentController::class, 'edit'])->name('student.edit');
 Route::put('/student/update/{student}', [StudentController::class, 'update'])->name('student.update');
 Route::delete('/student/delete/{std}', [StudentController::class, 'destroy'])->name('student.destroy');
+Route::post('/student/store', [StudentController::class, 'store'])->name('student.store');
 
+Route::get('/lecture-data',[ApiDataTable::class, 'fetch_data_lecture'])->name('lecture.all');
+Route::get('/student-data',[ApiDataTable::class, 'fetch_data_student'])->name('student.all');
 
+Route::prefix('student')->group(function () {
+    Route::post('/', [StudentController::class, 'store'])->name('student.store');
+    Route::get('/edit/{id}', [StudentController::class, 'edit']);
+    Route::put('/{id}', [StudentController::class, 'update']);
+    Route::delete('/clear/{id}', [StudentController::class, 'destroy']);
+});
 
 require __DIR__.'/auth.php';
